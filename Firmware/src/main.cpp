@@ -1,6 +1,13 @@
 #include <Arduino.h>
 #include <WiFi.h>
 //https://randomnerdtutorials.com/esp32-web-server-arduino-ide/
+#include <DS18B20.h>
+
+#define LOW_ALARM 20
+#define HIGH_ALARM 25
+
+DS18B20 ds(13);   //IO13
+
 
 //Wifi credentials
 const char* ssid = "DeaHT-Uffici";
@@ -56,8 +63,12 @@ void setup() {
   pinMode(pins[3], OUTPUT);
   pinMode(BUZZER_PIN, OUTPUT);
 
-  digitalWrite(BUZZER_PIN, HIGH); delay(200);
-  digitalWrite(BUZZER_PIN, LOW);  delay(500);
+  Serial.print(ds.getTempC());
+  Serial.println(" C\n");
+
+  //Buzzer
+  //digitalWrite(BUZZER_PIN, HIGH); delay(200);
+  //digitalWrite(BUZZER_PIN, LOW);  delay(500);
   
   pinMode(INPUT_PIN1, INPUT);
   pinMode(INPUT_PIN2, INPUT);
@@ -183,6 +194,15 @@ void loop() {
             
             // Web Page Heading
             client.println("<body><h1>Llama Tank Web Server</h1>");
+
+
+            // Display current Temperature  
+             float temperature;
+             temperature= ds.getTempC();
+             String sTemperature= (String)temperature;
+            
+            client.println("<p>Temperature[deg C] " + sTemperature + "</p>");
+
             
             // Display current state, and ON/OFF buttons for GPIO 26  
             client.println("<p>GPIO 26 - State " + output26State + "</p>");
