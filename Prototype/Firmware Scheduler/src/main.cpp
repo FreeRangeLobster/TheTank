@@ -38,8 +38,6 @@ unsigned long previousTime = 0;
 // Define timeout time in milliseconds (example: 2000ms = 2s)
 const long timeoutTime = 2000;
 
-
-
 //Buzzer pin
 #define BUZZER_PIN 18
 
@@ -141,6 +139,13 @@ void setup() {
   printLocalTime();
 
   EEPROM.begin(EEPROM_SIZE);
+
+  EEPROM.write(0, 255);
+  EEPROM.commit();
+  int a=0;
+  a=EEPROM.read(0);
+  Serial.print("Saved: ");
+  Serial.println(a);
 
   // ledState = EEPROM.read(0);
    //EEPROM.write(address, value);

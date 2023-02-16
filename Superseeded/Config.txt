@@ -1,0 +1,6 @@
+Configuration
+Last Modified 17092020
+0 EnableTrace
+1 EnableBluetooth
+1 Clear Outputs 
+0 NodeRed Supervisory
