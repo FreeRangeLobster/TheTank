@@ -6,3 +6,12 @@ C:\DevJV\Templates and References\SerialComms\WindowsApplication14\obj\Debug\Win
 C:\DevJV\Templates and References\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.csproj.CoreCompileInputs.cache
 C:\DevJV\Templates and References\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.exe
 C:\DevJV\Templates and References\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.pdb
+C:\Users\Utente\Desktop\Viva Las Vegas\TheTank\Software\SerialComms\WindowsApplication14\bin\Debug\WindowsApplication14.exe
+C:\Users\Utente\Desktop\Viva Las Vegas\TheTank\Software\SerialComms\WindowsApplication14\bin\Debug\WindowsApplication14.pdb
+C:\Users\Utente\Desktop\Viva Las Vegas\TheTank\Software\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.csproj.AssemblyReference.cache
+C:\Users\Utente\Desktop\Viva Las Vegas\TheTank\Software\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.Form1.resources
+C:\Users\Utente\Desktop\Viva Las Vegas\TheTank\Software\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.Properties.Resources.resources
+C:\Users\Utente\Desktop\Viva Las Vegas\TheTank\Software\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.csproj.GenerateResource.cache
+C:\Users\Utente\Desktop\Viva Las Vegas\TheTank\Software\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.csproj.CoreCompileInputs.cache
+C:\Users\Utente\Desktop\Viva Las Vegas\TheTank\Software\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.exe
+C:\Users\Utente\Desktop\Viva Las Vegas\TheTank\Software\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.pdb
