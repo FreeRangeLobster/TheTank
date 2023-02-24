@@ -58,6 +58,11 @@ const long  gmtOffset_sec = 0;
 const int   daylightOffset_sec = 3600;
 
 
+//Serial commms
+// pos++;
+String content = "";
+char character;
+
 // define the number of bytes you want to access
 #define EEPROM_SIZE 255
 
@@ -176,6 +181,14 @@ digitalWrite(pins[n], HIGH);
 
 }
 
+bool ValidateString(String sReceived){
+  if(sReceived.length()>=8){
+    return true;
+  }    
+  else{
+    return false;
+  }       
+}
 
 void loop() {
 
@@ -329,7 +342,7 @@ void loop() {
 
 
 // //change(pos);
-// Serial.print("ON Relay #"); Serial.println(pos);
+//  Serial.println("Hello cruel world of serial");
 // Serial.print("IN1: "); Serial.println(digitalRead(INPUT_PIN1));
 // Serial.print("IN2: "); Serial.println(digitalRead(INPUT_PIN2));
 // Serial.print("IN3: "); Serial.println(digitalRead(INPUT_PIN3));
@@ -338,10 +351,34 @@ void loop() {
 
 
 
-// delay(10);
+ delay(1000);
 
-// pos++;
+
+
+
+
+if(Serial.available()){
+  //Echo
+  while(Serial.available()) {
+      character = Serial.read();
+      content.concat(character);
+  }
+
+   Serial.println(content);
+  if(ValidateString(content)) {
+    Serial.println("OK lenght");
+  }   
+
+   content="";        
+}    
+    
+
 
 //   if (pos > 3) {pos = 0;}
 
 }
+
+
+
+//inString.toInt() to convert string to int
+//data.substring(9,11)

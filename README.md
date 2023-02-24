@@ -85,3 +85,14 @@ Summary: 00 111 1 0111 110010
 binary: 0011 1101 1111 0010
 hex 0x3DF2
 Dec 15858
+
+| Send  | REceive| 
+|-------|---------|
+|E: 0,0x4DFC /cr|ACK|
+|E: 1,0x888A /cr|ACK|
+|E: 2,0x3DF2 /cr|ACK|
+
+
+E:004DFC
+E:014DFC
+E:024DFC

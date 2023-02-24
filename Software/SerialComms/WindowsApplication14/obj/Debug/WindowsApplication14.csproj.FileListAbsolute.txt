@@ -1,0 +1,8 @@
+C:\DevJV\Templates and References\SerialComms\WindowsApplication14\bin\Debug\WindowsApplication14.exe
+C:\DevJV\Templates and References\SerialComms\WindowsApplication14\bin\Debug\WindowsApplication14.pdb
+C:\DevJV\Templates and References\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.Form1.resources
+C:\DevJV\Templates and References\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.Properties.Resources.resources
+C:\DevJV\Templates and References\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.csproj.GenerateResource.cache
+C:\DevJV\Templates and References\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.csproj.CoreCompileInputs.cache
+C:\DevJV\Templates and References\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.exe
+C:\DevJV\Templates and References\SerialComms\WindowsApplication14\obj\Debug\WindowsApplication14.pdb
