@@ -31,6 +31,8 @@ String output4State  = "off";
 const int output26 = 2;
 const int output27 = 15;
 
+
+
 // Current time
 unsigned long currentTime = millis();
 // Previous time
@@ -181,6 +183,9 @@ digitalWrite(pins[n], HIGH);
 
 }
 
+/// @brief Checks if the string received is compliant with the lenght expected
+/// @param sReceived String received
+/// @return true if the string has the correct lenght
 bool ValidateString(String sReceived){
   if(sReceived.length()>=8){
     return true;
@@ -189,6 +194,127 @@ bool ValidateString(String sReceived){
     return false;
   }       
 }
+
+
+int GetOutput(String sReceived){
+
+}
+
+int GetDay(String sReceived){
+  
+}
+
+int GetHour(String sReceived){
+  
+}
+
+int GetMinute(String sReceived){
+  
+}
+
+
+int StrToHex(char str[])
+{
+  return (int) strtol(str, 0, 16);
+}
+
+/// @brief Get the address where the information should be saved
+/// @param sReceived string received from the serial number
+/// @return byte address of the position
+int GetAddress(String sReceived){
+  // E:004DFC
+  String sAddress="";
+  sAddress=sReceived.substring(2,4);  
+  Serial.print("Address: ");
+  Serial.print(sAddress);
+  Serial.print("In Integer: "); 
+  byte byteNumber=1; 
+  byteNumber=sAddress.toInt();
+  Serial.println(byteNumber);
+  return byteNumber;
+}
+
+
+//Convert string to char array
+// // Define 
+// String str = "This is my string"; 
+// // Length (with one extra character for the null terminator)
+// int str_len = str.length() + 1; 
+// // Prepare the character array (the buffer) 
+// char char_array[str_len];
+// // Copy it over 
+// str.toCharArray(char_array, str_len);
+
+
+byte TopSide(String sReceived){
+  // E:004DFC
+  String sStrInterest="";
+  sStrInterest=sReceived.substring(4,6);  
+  Serial.print("Top Side: ");
+  Serial.print(sStrInterest);
+  Serial.print("In Integer: "); 
+  byte byteNumber=1; 
+
+  char input[3];
+  int charsRead;
+  int val;
+
+  // Define 
+  String str = sStrInterest; 
+  // Length (with one extra character for the null terminator)
+  int str_len = str.length() + 1; 
+  // Prepare the character array (the buffer) 
+  char char_array[str_len];
+  // Copy it over 
+  str.toCharArray(char_array, str_len);
+  byteNumber=StrToHex(char_array);
+  Serial.print("numero: "); 
+  Serial.println(byteNumber);
+  return byteNumber;
+}
+
+
+// void loop() {
+//   char input[3];
+//   int charsRead;
+//   int val;
+  
+//   if (Serial.available() > 0) {
+//     charsRead = Serial.readBytesUntil('\n', input, 2);  // fetch the two characters
+//     input[charsRead] = '\0';                            // Make it a string
+
+//     val = StrToHex(input);                              // Convert it
+
+//     Serial.print("Hex input was: ");                    // Show it...
+//     Serial.print(input);
+//     Serial.print("   decimal = ");
+//     Serial.println(val);
+//   }
+// }
+
+
+
+
+byte BottomSide(String sReceived){
+  // E:004DFC
+  String sAddress="";
+  sAddress=sReceived.substring(7,8);  
+  Serial.print("Bottom Side: ");
+  Serial.print(sAddress);
+  Serial.print("In Integer: "); 
+  byte byteNumber=1; 
+  byteNumber=sAddress.toInt();
+  Serial.println(byteNumber);
+  return byteNumber;
+}
+
+
+// int GetAddressPtr(String sREceived){
+
+//   int *MessageReceived;
+
+
+// }
 
 void loop() {
 
@@ -336,42 +462,42 @@ void loop() {
     Serial.println("Client disconnected.");
     Serial.println("");
   }
+  // //change(pos);
+  //  Serial.println("Hello cruel world of serial");
+  // Serial.print("IN1: "); Serial.println(digitalRead(INPUT_PIN1));
+  // Serial.print("IN2: "); Serial.println(digitalRead(INPUT_PIN2));
+  // Serial.print("IN3: "); Serial.println(digitalRead(INPUT_PIN3));
+  // Serial.print("IN4: "); Serial.println(digitalRead(INPUT_PIN4));
+  // delay(10000);
+  delay(1000);
 
 
 
 
 
-// //change(pos);
-//  Serial.println("Hello cruel world of serial");
-// Serial.print("IN1: "); Serial.println(digitalRead(INPUT_PIN1));
-// Serial.print("IN2: "); Serial.println(digitalRead(INPUT_PIN2));
-// Serial.print("IN3: "); Serial.println(digitalRead(INPUT_PIN3));
-// Serial.print("IN4: "); Serial.println(digitalRead(INPUT_PIN4));
-// delay(10000);
-
-
-
- delay(1000);
-
-
-
-
-
-if(Serial.available()){
-  //Echo
-  while(Serial.available()) {
+  if(Serial.available()){
+    //Echo
+    while(Serial.available()) {
       character = Serial.read();
       content.concat(character);
-  }
+    }
 
-   Serial.println(content);
-  if(ValidateString(content)) {
-    Serial.println("OK lenght");
-  }   
+    Serial.println(content);
+    if(ValidateString(content)) {
+      Serial.println("OK lenght"); 
+      GetAddress(content); 
+      TopSide(content); 
+      BottomSide(content); 
 
-   content="";        
-}    
+
+
+    }  
+
     
+    content="";        
+  }    
+    
+  //
 
 
 //   if (pos > 3) {pos = 0;}
