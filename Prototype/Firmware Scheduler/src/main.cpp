@@ -159,6 +159,18 @@ void setup() {
 
 }
 
+void ReadMemory(){
+
+  for (size_t i = 0; i < 50; i++)
+  {
+    int a=EEPROM.read(i);
+    Serial.printf("Position: %d: Value:",i);
+    Serial.println(a);
+  }
+  
+  
+
+}
 
 
 
@@ -186,7 +198,7 @@ digitalWrite(pins[n], HIGH);
 /// @brief Checks if the string received is compliant with the lenght expected
 /// @param sReceived String received
 /// @return true if the string has the correct lenght
-bool ValidateString(String sReceived){
+bool ValidateStringEvent(String sReceived){
   if(sReceived.length()>=8){
     return true;
   }    
@@ -235,15 +247,6 @@ int GetAddress(String sReceived){
 }
 
 
-//Convert string to char array
-// // Define 
-// String str = "This is my string"; 
-// // Length (with one extra character for the null terminator)
-// int str_len = str.length() + 1; 
-// // Prepare the character array (the buffer) 
-// char char_array[str_len];
-// // Copy it over 
-// str.toCharArray(char_array, str_len);
 
 
 byte TopSide(String sReceived){
@@ -274,44 +277,32 @@ byte TopSide(String sReceived){
 }
 
 
-// void loop() {
-//   char input[3];
-//   int charsRead;
-//   int val;
-  
-//   if (Serial.available() > 0) {
-//     charsRead = Serial.readBytesUntil('\n', input, 2);  // fetch the two characters
-//     input[charsRead] = '\0';                            // Make it a string
 
-//     val = StrToHex(input);                              // Convert it
-
-//     Serial.print("Hex input was: ");                    // Show it...
-//     Serial.print(input);
-//     Serial.print("   decimal = ");
-//     Serial.println(val);
-//   }
-// }
-
-
-
-
-byte BottomSide(String sReceived){
-  // E:004DFC
-  String sAddress="";
-  sAddress=sReceived.substring(7,8);  
-  Serial.print("Bottom Side: ");
-  Serial.print(sAddress);
-  Serial.print("In Integer: "); 
+byte SplitAndConvertByte(String sReceived, byte nStart, byte nFinish ){
+   // E:004DFC
+  String sStrInterest="";
+  sStrInterest=sReceived.substring(nStart,nFinish);  
+  Serial.println(sStrInterest);
+  Serial.printf(" -Split And Convert Byte: Start:%d  Finish:%d",nStart,nFinish);
+  Serial.print(" In Integer: "); 
   byte byteNumber=1; 
-  byteNumber=sAddress.toInt();
+
+  // Define 
+  String str = sStrInterest; 
+  // Length (with one extra character for the null terminator)
+  int str_len = str.length() + 1; 
+  // Prepare the character array (the buffer) 
+  char char_array[str_len];
+  // Copy it over 
+  str.toCharArray(char_array, str_len);
+  byteNumber=StrToHex(char_array);
+  Serial.print("numero: "); 
   Serial.println(byteNumber);
   return byteNumber;
 }
 
 
-// int GetAddressPtr(String sREceived){
 
-//   int *MessageReceived;
 
 
 // }
@@ -472,28 +463,56 @@ void loop() {
   delay(1000);
 
 
-
-
-
   if(Serial.available()){
-    //Echo
+    //get the serial contents
     while(Serial.available()) {
       character = Serial.read();
       content.concat(character);
     }
 
+
+    if (content.startsWith("Show"))
+    {
+        ReadMemory();
+       // Serial.println("hell"); 
+    }
+    
+
     Serial.println(content);
-    if(ValidateString(content)) {
+
+    if(ValidateStringEvent(content)) {
       Serial.println("OK lenght"); 
       GetAddress(content); 
       TopSide(content); 
-      BottomSide(content); 
+      //BottomSide(content); 
 
+      byte val;
+      byte Address;
+      byte HighSide;
+      byte LowSide;
+      Address = SplitAndConvertByte(content,2,4);
+      HighSide = SplitAndConvertByte(content,4,6);    
+      LowSide = SplitAndConvertByte(content,6,8); 
 
+      EEPROM.write((Address*2), HighSide); 
+      EEPROM.write((Address*2)+1, LowSide);
+      EEPROM.commit(); 
+
+      Serial.printf("Address: %d HighByte: %d LowByte: %d \n", Address,HighSide,LowSide );
+       
+
+      int nhighSide=0;
+      int nlowSide=0;
+      nhighSide=EEPROM.read(Address*2);
+      nlowSide=EEPROM.read((Address*2)+1); 
+
+      Serial.printf("In Memory Address: %d HighByte: In Memory Address: %d \n", Address*2,nhighSide);
+      Serial.printf("In Memory Address: %d LowByte: In Memory Address: %d  \n",(Address*2)+1,nlowSide);
+      Serial.println("----");
+
+      ReadMemory();
 
     }  
-
-    
     content="";        
   }    
     
@@ -505,6 +524,41 @@ void loop() {
 }
 
 
+// int GetAddressPtr(String sREceived){
+
+//   int *MessageReceived;
+
+
+//Reading serial using pointers
+// void loop() {
+//   char input[3];
+//   int charsRead;
+//   int val;
+  
+//   if (Serial.available() > 0) {
+//     charsRead = Serial.readBytesUntil('\n', input, 2);  // fetch the two characters
+//     input[charsRead] = '\0';                            // Make it a string
+
+//     val = StrToHex(input);                              // Convert it
+
+//     Serial.print("Hex input was: ");                    // Show it...
+//     Serial.print(input);
+//     Serial.print("   decimal = ");
+//     Serial.println(val);
+//   }
+// }
+
 
 //inString.toInt() to convert string to int
 //data.substring(9,11)
+
+
+//Convert string to char array
+// // Define 
+// String str = "This is my string"; 
+// // Length (with one extra character for the null terminator)
+// int str_len = str.length() + 1; 
+// // Prepare the character array (the buffer) 
+// char char_array[str_len];
+// // Copy it over 
+// str.toCharArray(char_array, str_len);

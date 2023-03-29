@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SettingsName>YAT Command Page Definition</SettingsName>
+  <SettingsVersion>1.0.2</SettingsVersion>
+  <ProductVersion>2.4.1</ProductVersion>
+  <Warning>Modifying structure and/or content may cause undefined behavior!</Warning>
+  <Mark>
+    <TimeStamp>2023-03-03T14:03:34.2143734+01:00</TimeStamp>
+    <UserName>Utente</UserName>
+  </Mark>
+  <Page>
+    <PageName>Page 1</PageName>
+    <Commands>
+      <IsDefined>true</IsDefined>
+      <Description />
+      <DefaultRadix>String</DefaultRadix>
+      <CommandLines>E:004DFC</CommandLines>
+      <IsFilePath>false</IsFilePath>
+      <FilePath />
+    </Commands>
+    <Commands>
+      <IsDefined>true</IsDefined>
+      <Description />
+      <DefaultRadix>String</DefaultRadix>
+      <CommandLines>E:01888A</CommandLines>
+      <IsFilePath>false</IsFilePath>
+      <FilePath />
+    </Commands>
+    <Commands>
+      <IsDefined>true</IsDefined>
+      <Description />
+      <DefaultRadix>String</DefaultRadix>
+      <CommandLines>E:023DF2</CommandLines>
+      <IsFilePath>false</IsFilePath>
+      <FilePath />
+    </Commands>
+  </Page>
+</Settings>
