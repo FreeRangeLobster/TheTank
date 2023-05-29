@@ -147,14 +147,14 @@ void setup() {
 
   EEPROM.begin(EEPROM_SIZE);
 
-  EEPROM.write(0, 255);
-  EEPROM.commit();
-  int a=0;
-  a=EEPROM.read(0);
-  Serial.print("Saved: ");
-  Serial.println(a);
+  // EEPROM.write(0, 255);
+  // EEPROM.commit();
+  // int a=0;
+  // a=EEPROM.read(0);
+  // Serial.print("Saved: ");
+  // Serial.println(a);
 
-  // ledState = EEPROM.read(0);
+   //ledState = EEPROM.read(0);
    //EEPROM.write(address, value);
 
 }
@@ -166,10 +166,7 @@ void ReadMemory(){
     int a=EEPROM.read(i);
     Serial.printf("Position: %d: Value:",i);
     Serial.println(a);
-  }
-  
-  
-
+  }  
 }
 
 
@@ -208,22 +205,146 @@ bool ValidateStringEvent(String sReceived){
 }
 
 
-int GetOutput(String sReceived){
+#pragma region Get details of events from memory
 
+//|  2bit        | 3 bit     | 5  bit    |   5  bit     |   1 bit   |
+//|--------------|-----------|-----------|--------------|-----------|
+//| Output(0-3)  |  Day(0-7) | Hour(0-24)|  Min*2(0-60) | State(0-1)|
+
+//Where 
+//Output = 00-11 (0-3)
+//  [Position in reg 14- 15]
+//Day=000-110
+//  [Position in reg 11- 13]
+// 	  Mon(000)
+//	  Tue(001)
+//	  Wed(010)
+//	  Thr(011)
+//	  Fri(100)
+//	  Sat(101)
+//	  Sun(110)
+//Everyday(111)
+//  Hour= 0 - 10111 (0-23) 
+//  [Position in reg 6- 10] 
+//	  1am= 00001
+//	  2am= 00010
+//	  12am= 12		 
+//	  12pm= 0
+//Minutes= 00000 - 11 11 0 () Due to the design constrains to reduce the number of bits in memory, odd numbers are rounded eg 11m is actually 10m 
+//  [Position in reg 1- 5] 
+//	  10m - 00101 => 5*2 = 10m
+//	  11m - 11/2 =5 => 5*2 = 10m 
+//	  20m - 01010 => 10*2= 20m
+//	  30m - 01111 => 15*2= 30m
+//	  40m - 10100 => 20*2= 10m
+//	  50m - 11001 => 25*2= 10m
+//State = 0-1 (0-1)
+//  [Position in reg 0] 
+//    1 On
+//    0 Off
+
+//| Address  0,1  | Event 0| 
+//|-------|---------|
+//Output =(1) 01
+//Day = Tuesday 001
+//Hour=23 1 0111
+//Minute=30 11 11 0
+//State= 0
+
+//Summary: 01 001 1 0111 11 11 00
+//binary   0100 1101 1111 1100 
+//hex 0x4DFC
+//Dec 19964
+
+
+
+/// @brief Gets the output from the memory register
+/// @param MemValue Memory value 0-255
+/// @return value between 1-4
+int GetFullEventFromMemRegisters(uint8_t MemValueLow, uint8_t MemValueHigh){
+  uint16_t value;
+  uint16_t FullValue;
+
+  FullValue = (MemValueHigh << 8 ) | (MemValueLow & 0xff);
+  //value = GetValueFromReg(FullValue,0b1100000000000000);
+  return FullValue;
 }
 
-int GetDay(String sReceived){
-  
+/// @brief Gets the relevant information from a memory position
+/// @param MemValue 
+/// @param mask 
+/// @return 
+uint16_t GetValueFromReg(uint16_t nFullEvent, uint16_t mask,uint8_t Position ){  
+  uint16_t a=0;  
+  //Build mask
+  Serial.println("---GetValueFromReg-----");
+  Serial.printf("Mask: %X \r",mask);
+  Serial.printf("GetValueFromReg ->Received: %X \r",nFullEvent);
+  a = nFullEvent & mask;
+  Serial.printf("Conversion: %d \r",a);
+  Serial.printf("Conversion: %X \r",a);
+  Serial.println("-----------------------");
+  a = a >> Position;
+  //Convert to integer
+  return a;
 }
 
-int GetHour(String sReceived){
-  
+/// @brief Gets the output's number from  memory register
+/// @param MemValue Memory value 0-255
+/// @return value between 0-3
+uint8_t GetOutputNumber(uint16_t MemValue){
+    uint8_t a=0;
+    a=GetValueFromReg(MemValue,0b1100000000000000,14);
+    return a;
 }
 
-int GetMinute(String sReceived){
-  
+/// @brief Gets the output's state from the memory register
+/// @param MemValue Memory value 0-255
+/// @return value between 0-1
+uint8_t GetOutputState(uint16_t MemValue){
+   uint8_t a=0;
+    a=GetValueFromReg(MemValue,0b0000000000000001,0);
+    return a;
 }
 
+/// @brief Gets hour from the memory register
+/// @param MemValue Memory value 0-255
+/// @return value between 0-1
+int GetDayFromMemReg(uint16_t MemValue){
+  //|  2bit        | 3 bit     | 5  bit    |   5  bit     |   1 bit   |
+  //|--------------|-----------|-----------|--------------|-----------|
+  //| Output(0-3)  |  Day(0-7) | Hour(0-24)|  Min*2(0-60) | State(0-1)|
+  uint8_t a=0;
+  a=GetValueFromReg(MemValue,0b0011100000000000,11);
+  return a;
+}
+
+/// @brief Gets hour from the memory register
+/// @param MemValue Memory value 0-255
+/// @return value between 0-1
+int GetHourFromMemReg(uint16_t MemValue){
+  //|  2bit        | 3 bit     | 5  bit    |   5  bit     |   1 bit   |
+  //|--------------|-----------|-----------|--------------|-----------|
+  //| Output(0-3)  |  Day(0-7) | Hour(0-24)|  Min*2(0-60) | State(0-1)|
+
+  uint8_t a=0;
+  a=GetValueFromReg(MemValue,0b0000011111000000,6);
+  return a;
+}
+
+
+
+/// @brief Gets the output's state from the memory register
+/// @param MemValue Memory value 0-255
+/// @return value between 0-1
+int GetMinFromMemReg(uint16_t MemValue){
+  uint8_t a=0;
+  a=GetValueFromReg(MemValue,0b0000000000111110,1);
+  return a;
+}
+
+
+#pragma endregion
 
 int StrToHex(char str[])
 {
@@ -473,8 +594,89 @@ void loop() {
 
     if (content.startsWith("Show"))
     {
-        ReadMemory();
-       // Serial.println("hell"); 
+
+      ReadMemory();
+      
+      uint16_t FullMemValue;
+      uint16_t OutputNumber;
+      uint16_t OutputState;
+      uint16_t nDay;
+      uint16_t nHour;
+      uint16_t nMinute;
+   
+      FullMemValue = GetFullEventFromMemRegisters(252,77);
+      Serial.printf("Full Number in dec: %d \n: Value:",FullMemValue);
+      Serial.printf("Full Number in hex: %X \r: Value:",FullMemValue);
+      Serial.println("-----");
+
+
+      Serial.println("OutputNumber");
+      OutputNumber=GetOutputNumber(FullMemValue);
+      Serial.printf("Output: %d \r",OutputNumber);
+      Serial.println("-----");
+
+      Serial.println();
+      Serial.println("GetDayFromMemReg");
+      nDay=GetDayFromMemReg(FullMemValue);
+      Serial.printf("nDay=: %d \r",nDay);
+      Serial.println("-----");
+
+      Serial.println();
+      Serial.println("GetHourFromMemReg");
+      nHour=GetHourFromMemReg(FullMemValue);
+      Serial.printf("nHour: %d \r",nHour);
+      Serial.println("-----");
+
+      Serial.println();
+      Serial.println("GetMinFromMemReg");
+      nMinute=GetMinFromMemReg(FullMemValue);
+      Serial.printf("nMinute: %d \r",nMinute);
+      Serial.println("-----");
+
+
+      Serial.println();
+      Serial.println("GetOutputState");
+      OutputState=GetOutputState(FullMemValue);
+      Serial.printf("State: %d \r",OutputState);
+      Serial.println("-----");
+
+      //3DF2
+      FullMemValue = GetFullEventFromMemRegisters(242,61);
+      Serial.printf("Full Number in dec: %d \n: Value:",FullMemValue);
+      Serial.printf("Full Number in hex: %X \r: Value:",FullMemValue);
+      Serial.println("-----");
+
+
+      Serial.println("OutputNumber");
+      OutputNumber=GetOutputNumber(FullMemValue);
+      Serial.printf("Output: %d \r",OutputNumber);
+      Serial.println("-----");
+
+      Serial.println();
+      Serial.println("GetDayFromMemReg");
+      nDay=GetDayFromMemReg(FullMemValue);
+      Serial.printf("nDay=: %d \r",nDay);
+      Serial.println("-----");
+
+      Serial.println();
+      Serial.println("GetHourFromMemReg");
+      nHour=GetHourFromMemReg(FullMemValue);
+      Serial.printf("nHour: %d \r",nHour);
+      Serial.println("-----");
+
+      Serial.println();
+      Serial.println("GetMinFromMemReg");
+      nMinute=GetMinFromMemReg(FullMemValue);
+      Serial.printf("nMinute: %d \r",nMinute);
+      Serial.println("-----");
+
+
+      Serial.println();
+      Serial.println("GetOutputState");
+      OutputState=GetOutputState(FullMemValue);
+      Serial.printf("State: %d \r",OutputState);
+      Serial.println("-----");
+
     }
     
 

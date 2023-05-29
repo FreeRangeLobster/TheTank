@@ -5,36 +5,38 @@ Electronics controller for 300lt fishtank, using KinconyA4
 
 Event structure in bits
 
-|2bit       | 7  bit    | 4  bit            | 4  bit                |
-|----------------|-------------------------------|--|-----|------------------------|
-|Output |Day            |Hour              | minutes
 
+
+|  2bit        | 3 bit     | 5  bit    |   5  bit     |   1 bit   |
+|--------------|-----------|-----------|--------------|-----------|
+| Output(0-3)  |  Day(0-7) | Hour(0-24)|  Min*2(0-60) | State(0-1)|
 
 Where 
 Output = 00-11 (0-3)
 Day=000-110
-> Mon(000)
- Tue(001)
- Wed(010)
- Thr(011)
-Fri(100)
-Sat(101)
-Sun(110)
-		Everyday(111)
+> 	Mon(000)
+	Tue(001)
+	Wed(010)
+	Thr(011)
+	Fri(100)
+	Sat(101)
+	Sun(110)
+Everyday(111)
 
 Hour= 0 - 10111 (0-23) 
-> 1am= 00001
- 2am= 00010
-12am= 12		 
- 12pm= 0
+	1am= 00001
+	2am= 00010
+	12am= 12		 
+	12pm= 0
 
-Minutes= 000000 - 11 11 00
->10m - 001010
-20m - 010100
-30m - 011110
-40m - 101000
-50m - 110010
-60m - 111100
+Minutes= 00000 - 11 11 0 () Due to the design constrains to reduce the number of bits in memory, odd numbers are rounded eg 11m is actually 10m 
+	10m - 00101 => 5*2 = 10m
+	11m - 11/2 =5 => 5*2 = 10m 
+	20m - 01010 => 10*2= 20m
+	30m - 01111 => 15*2= 30m
+	40m - 10100 => 20*2= 10m
+	50m - 11001 => 25*2= 10m
+	
 		
 	
 
@@ -94,5 +96,5 @@ Dec 15858
 
 
 E:004DFC
-E:014DFC
-E:024DFC
+E:01888A
+E:023DF2
