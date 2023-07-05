@@ -32,6 +32,9 @@ const int output26 = 2;
 const int output27 = 15;
 
 
+struct tm timeCurrentinfo;
+
+
 
 // Current time
 unsigned long currentTime = millis();
@@ -56,8 +59,9 @@ byte pos = 0;
 
 //time
 const char* ntpServer = "pool.ntp.org";
-const long  gmtOffset_sec = 0;
+const long  gmtOffset_sec = 3600;
 const int   daylightOffset_sec = 3600;
+//const int   daylightOffset_sec = 0;
 
 
 //Serial commms
@@ -77,6 +81,9 @@ void printLocalTime(){
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
   Serial.print("Day of week: ");
   Serial.println(&timeinfo, "%A");
+ 
+  Serial.printf("Days from sunday: %d", timeinfo.tm_wday);   //tm_wday
+  Serial.println();
   Serial.print("Month: ");
   Serial.println(&timeinfo, "%B");
   Serial.print("Day of Month: ");
@@ -101,6 +108,28 @@ void printLocalTime(){
   Serial.println(timeWeekDay);
   Serial.println();
 }
+
+
+
+uint CurrentTimeGetHour(tm timeinfo){
+  // Serial.printf("Hour: %d", timeinfo.tm_hour);
+  Serial.println("---");
+  return timeinfo.tm_hour;
+}
+
+uint CurrentTimeGetMinute(tm timeinfo){
+  // Serial.printf("Min: %d", timeinfo.tm_min);
+  Serial.println("---");
+  return timeinfo.tm_min;
+}
+
+uint CurrentTimeGetDayFromSun(tm timeinfo){
+  // Serial.printf("Days from sunday: %d", timeinfo.tm_wday);
+  Serial.println("---");
+  return timeinfo.tm_wday;
+}
+
+
 
 void setup() {
 
@@ -223,7 +252,7 @@ bool ValidateStringEvent(String sReceived){
 //	  Fri(100)
 //	  Sat(101)
 //	  Sun(110)
-//Everyday(111)
+//    Everyday(111)
 //  Hour= 0 - 10111 (0-23) 
 //  [Position in reg 6- 10] 
 //	  1am= 00001
@@ -428,6 +457,75 @@ byte SplitAndConvertByte(String sReceived, byte nStart, byte nFinish ){
 
 // }
 
+bool CheckEvent(uint8_t MemValueLow, uint8_t MemValueHigh){
+      struct tm timeinfo;
+      if(!getLocalTime(&timeinfo)){
+        Serial.println("Failed to obtain time");
+        return false;
+      }
+
+
+      uint nHour;
+      uint nMinute;
+      uint nDay;
+
+
+      nHour= CurrentTimeGetHour(timeinfo);
+      Serial.printf("Hour: %d", nHour);
+      
+      nMinute =CurrentTimeGetMinute(timeinfo);
+      Serial.printf("Minute: %d", nMinute);
+
+      nDay= CurrentTimeGetDayFromSun(timeinfo);
+      Serial.printf("Day from Sun: %d", nDay);
+      Serial.println();
+
+
+      int FullMemValue = GetFullEventFromMemRegisters(252,77);
+
+      //Convert
+
+      //Check hour
+
+      //Check minute
+      //Check day
+
+
+}
+
+bool TimeToCheckEvenMinute(){
+      struct tm timeinfo;
+
+      if(!getLocalTime(&timeinfo)){
+        Serial.println("Failed to obtain time");
+        return false;
+      }
+
+      uint nSecond;
+      nSecond=timeinfo.tm_sec;
+      if (nSecond==0)
+      {
+        Serial.printf("Second: %d", nSecond);
+        Serial.println("Checking minutes");
+
+      }
+      else{
+        return false;
+      }
+      
+      uint nMinute;
+      nMinute= CurrentTimeGetMinute(timeinfo);         
+      if ( nMinute % 2 == 0)
+      {
+        Serial.printf("Even minute: %d", nMinute);
+      }
+      else {
+        Serial.printf("Odd minute: %d", nMinute);
+      }
+
+      return true;
+}
+
 void loop() {
 
   WiFiClient client = server.available();   // Listen for incoming clients
@@ -581,7 +679,11 @@ void loop() {
   // Serial.print("IN3: "); Serial.println(digitalRead(INPUT_PIN3));
   // Serial.print("IN4: "); Serial.println(digitalRead(INPUT_PIN4));
   // delay(10000);
-  delay(1000);
+  delay(500);
+
+
+
+
 
 
   if(Serial.available()){
@@ -638,7 +740,7 @@ void loop() {
       Serial.println("GetOutputState");
       OutputState=GetOutputState(FullMemValue);
       Serial.printf("State: %d \r",OutputState);
-      Serial.println("-----");
+      Serial.println("------------------------------------------");
 
       //3DF2
       FullMemValue = GetFullEventFromMemRegisters(242,61);
@@ -670,15 +772,25 @@ void loop() {
       Serial.printf("nMinute: %d \r",nMinute);
       Serial.println("-----");
 
-
       Serial.println();
       Serial.println("GetOutputState");
       OutputState=GetOutputState(FullMemValue);
       Serial.printf("State: %d \r",OutputState);
-      Serial.println("-----");
+      Serial.println("------------------------------------------");
 
     }
-    
+
+
+    if (content.startsWith("CheckEvent"))
+    {
+      Serial.println("-----Start-------");
+      CheckEvent(10,10);
+      Serial.println("-----Finish-------");  
+      Serial.println();
+      Serial.println();
+      Serial.println();
+
+    }
 
     Serial.println(content);
 
@@ -718,6 +830,10 @@ void loop() {
     content="";        
   }    
     
+
+  if(TimeToCheckEvenMinute()==true)  {
+    Serial.println("Checking from main");
+  }
   //
 
 

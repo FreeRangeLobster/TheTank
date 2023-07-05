@@ -29,7 +29,146 @@ namespace WindowsApplication14
             InitializeComponent();
             SerialPinChangedEventHandler1 = new SerialPinChangedEventHandler(PinChanged);
             ComPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(port_DataReceived_1);
+            LoadEventVAriables();
         }
+
+
+        private void LoadEventVAriables()
+        {
+            //| Address  0,1  | Event 0| 
+            //|-------|---------|
+            //Output =(1) 01
+            //Day = Tuesday 001
+            //Hour=23 1 0111
+            //Minute=30 11 11 0
+            //State= 0
+
+            //Summary: 01 001 1 0111 11 11 00
+            //binary   0100 1101 1111 1100 
+            //hex 0x4DFC
+            //Dec 19964
+
+            cbAddress.Items.AddRange(new string[] {"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10" });
+            cbAddress.SelectedIndex = 0;
+
+            cbOutput.Items.AddRange(new string[] { "0", "1", "2", "3" });
+            cbOutput.SelectedIndex = 1;
+
+            cbDay.Items.AddRange(new string[] { "0 Sunday", "1 Monday", "2 Tuesday", "3 Wednesday", "4 Thursday", "5 Friday", "6 Saturday"  });
+            cbDay.SelectedIndex =0;
+
+            cbHour.Items.AddRange(new string[] { "1", "2" , "3", "4" , "5", "6" , "7", "8", "9" , "10", "11" , "12",
+                                                "13", "14" , "15", "16" , "17", "18" , "19", "20", "21" , "22", "23" , "0", });
+            cbHour.SelectedIndex = 22;
+
+            cbMinute.Items.AddRange(new string[] {"0", "2", "4", "6", "8", "10", "12", "14", "16", "18", "20", "22", "24", "26", "28", "20","22", "24", "26", "28", "30",
+                                                   "32", "34", "36", "38", "40", "42", "44", "46", "48", "50", "52", "54", "66", "58", });
+            cbMinute.SelectedIndex = 20;
+
+            cbState.Items.AddRange(new string[] { "0", "1" });
+            cbState.SelectedIndex = 0;
+        }
+
+
+        private void cmdCalculateEvent_Click(object sender, EventArgs e)
+        {
+            string slastError = string.Empty;
+            string sBinValue= string.Empty;
+            string sbinValueSeparated = string.Empty;
+            tbEvent.Text = sEvent(cbAddress.Text,cbOutput.Text,cbDay.Text,cbHour.Text,cbMinute.Text,cbState.Text, out sBinValue, out sbinValueSeparated, out slastError);
+            tbEventBin.Text = sBinValue;
+            tbBinWithSpaces.Text  = sbinValueSeparated;
+        }
+
+
+        string sEvent(string sAddress, string sOutput, string sDay, string sHour, string sMinute, string sState,out string sBinValue,out string sBinValueSeparated,out string sLastError)
+        {
+            sLastError = string.Empty;
+            string sHexValue = string.Empty;
+            sBinValue = string.Empty;
+            sBinValueSeparated = string.Empty;
+
+            uint HighByteSide = 0;
+            uint LowByteSide = 0;
+            uint fullEvent = 0;
+
+            uint nAddress = 0;
+            uint nOutput = 0;
+            uint nDay = 0;
+            uint nHour = 0;
+            uint nMinute = 0;
+            uint nState = 0;
+
+            //|  2bit        | 3 bit     | 5  bit    |   5  bit     |   1 bit   |
+            //|--------------|-----------|-----------|--------------|-----------|
+            //| Output(0-3)  |  Day(0-7) | Hour(0-24)|  Min*2(0-60) | State(0-1)|
+
+
+            if (sDay.Length>1)
+            {
+                sDay = sDay.Substring(0, 1);
+            }
+
+            //Output Convert string to number
+            if (uint.TryParse(sOutput, out nOutput)==false)
+            {                
+                sLastError = " unable to parse sOutput";
+                return "";
+            }
+
+            //Day Convert string to number 
+            if (uint.TryParse(sDay, out nDay) == false)
+            {
+                sLastError = " unable to parse Day";
+                return "";
+            }
+
+            //Hour Convert string to number 
+            if (uint.TryParse(sHour, out nHour) == false)
+            {
+                sLastError = " unable to parse sHour";
+                return "";
+            }
+
+            //Min Convert string to number
+            if (uint.TryParse(sMinute, out nMinute)==false)
+            {
+                sLastError = " unable to parse sMinute";
+                return "";
+            }
+
+
+            nMinute = nMinute / 2;
+
+            //State
+            if (uint.TryParse(sState, out nState) == false)
+            {
+                sLastError = " unable to parse sState";
+                return "";
+            }
+
+            //Build the number from 
+            
+            nOutput = nOutput << 14;
+           
+            nMinute = nMinute << 1;
+            nHour = nHour << 6;
+
+            nDay = nDay << 11;
+
+            fullEvent = nOutput | nDay | nHour | nMinute | nState;
+
+            sBinValue = Convert.ToString(fullEvent, 2).PadLeft(16, '0');
+            sHexValue = Convert.ToString(fullEvent, 16).PadLeft(4, '0').ToUpper();
+
+            sBinValueSeparated = sBinValue.Insert(2, " ");
+            sBinValueSeparated = sBinValueSeparated.Insert(2+1+3, " ");
+            sBinValueSeparated = sBinValueSeparated.Insert(2 + 1 + 3 + 1 + 5, " ");
+            sBinValueSeparated = sBinValueSeparated.Insert(2 + 1 + 3 + 1 + 5 + 1 + 5, " ");
+
+            return sHexValue;
+        }
+
 
         internal void PinChanged(object sender, SerialPinChangedEventArgs e)
         {
@@ -230,5 +369,7 @@ namespace WindowsApplication14
             }
             
         }
+
+
     }
 }
