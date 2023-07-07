@@ -10,7 +10,6 @@
 
 DS18B20 ds(13);   //IO13
 
-
 //Wifi credentials
 const char* ssid = "DeaHT-Uffici";
 const char* password = "*r6pHoPh-c";
@@ -31,11 +30,7 @@ String output4State  = "off";
 const int output26 = 2;
 const int output27 = 15;
 
-
 struct tm timeCurrentinfo;
-
-
-
 // Current time
 unsigned long currentTime = millis();
 // Previous time
@@ -45,7 +40,6 @@ const long timeoutTime = 2000;
 
 //Buzzer pin
 #define BUZZER_PIN 18
-
  
 //Relay Pins
 byte pins[] = {2, 15, 5, 4};
@@ -61,7 +55,6 @@ byte pos = 0;
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 3600;
 const int   daylightOffset_sec = 3600;
-//const int   daylightOffset_sec = 0;
 
 
 //Serial commms
@@ -109,8 +102,6 @@ void printLocalTime(){
   Serial.println();
 }
 
-
-
 uint CurrentTimeGetHour(tm timeinfo){
   // Serial.printf("Hour: %d", timeinfo.tm_hour);
   Serial.println("---");
@@ -128,8 +119,6 @@ uint CurrentTimeGetDayFromSun(tm timeinfo){
   Serial.println("---");
   return timeinfo.tm_wday;
 }
-
-
 
 void setup() {
 
@@ -198,9 +187,7 @@ void ReadMemory(){
   }  
 }
 
-
-
-void clear() {
+void clearAllOutputs() {
 
   digitalWrite(pins[0], LOW);
 
@@ -212,13 +199,15 @@ void clear() {
 
 }
 
-
-void change(byte n) {
-
-clear();
-
-digitalWrite(pins[n], HIGH);
-
+void ModStateOutput(byte nOutput,byte nState) 
+{
+  if (nState==1)
+  {
+    digitalWrite(pins[nOutput], HIGH);
+  }
+  else{
+     digitalWrite(pins[nOutput],LOW);
+  }
 }
 
 /// @brief Checks if the string received is compliant with the lenght expected
@@ -306,13 +295,13 @@ int GetFullEventFromMemRegisters(uint8_t MemValueLow, uint8_t MemValueHigh){
 uint16_t GetValueFromReg(uint16_t nFullEvent, uint16_t mask,uint8_t Position ){  
   uint16_t a=0;  
   //Build mask
-  Serial.println("---GetValueFromReg-----");
-  Serial.printf("Mask: %X \r",mask);
-  Serial.printf("GetValueFromReg ->Received: %X \r",nFullEvent);
+  //Serial.println("---GetValueFromReg-----");
+  //Serial.printf("Mask: %X \r",mask);
+  //Serial.printf("GetValueFromReg ->Received: %X \r",nFullEvent);
   a = nFullEvent & mask;
-  Serial.printf("Conversion: %d \r",a);
-  Serial.printf("Conversion: %X \r",a);
-  Serial.println("-----------------------");
+  //Serial.printf("Conversion: %d \r",a);
+  //Serial.printf("Conversion: %X \r",a);
+  //Serial.println("-----------------------");
   a = a >> Position;
   //Convert to integer
   return a;
@@ -361,8 +350,6 @@ int GetHourFromMemReg(uint16_t MemValue){
   return a;
 }
 
-
-
 /// @brief Gets the output's state from the memory register
 /// @param MemValue Memory value 0-255
 /// @return value between 0-1
@@ -397,8 +384,6 @@ int GetAddress(String sReceived){
 }
 
 
-
-
 byte TopSide(String sReceived){
   // E:004DFC
   String sStrInterest="";
@@ -427,7 +412,6 @@ byte TopSide(String sReceived){
 }
 
 
-
 byte SplitAndConvertByte(String sReceived, byte nStart, byte nFinish ){
    // E:004DFC
   String sStrInterest="";
@@ -451,45 +435,106 @@ byte SplitAndConvertByte(String sReceived, byte nStart, byte nFinish ){
   return byteNumber;
 }
 
-
-
-
-
-// }
-
-bool CheckEvent(uint8_t MemValueLow, uint8_t MemValueHigh){
-      struct tm timeinfo;
-      if(!getLocalTime(&timeinfo)){
-        Serial.println("Failed to obtain time");
-        return false;
-      }
-
-
+bool CheckEvent( uint8_t MemValueHigh,uint8_t MemValueLow, tm timeinfo){
+      //Current time
       uint nHour;
       uint nMinute;
       uint nDay;
-
+      uint nOutput;
 
       nHour= CurrentTimeGetHour(timeinfo);
-      Serial.printf("Hour: %d", nHour);
-      
       nMinute =CurrentTimeGetMinute(timeinfo);
-      Serial.printf("Minute: %d", nMinute);
-
       nDay= CurrentTimeGetDayFromSun(timeinfo);
-      Serial.printf("Day from Sun: %d", nDay);
-      Serial.println();
 
 
-      int FullMemValue = GetFullEventFromMemRegisters(252,77);
 
-      //Convert
 
-      //Check hour
 
-      //Check minute
-      //Check day
+      int FullMemValue = GetFullEventFromMemRegisters(MemValueLow,MemValueHigh);
+      Serial.printf("--Current Hour: %d,Minute: %d,Day from Sun: %d, --HighVal %d, --LowVal %d, Mem Val 0x%X, value in dec %d ", nHour,nMinute,nDay,MemValueHigh,MemValueLow,FullMemValue, FullMemValue);         
+      Serial.println("");
 
+            //Memory
+      uint nMemHour;
+      uint nMemMinute;
+      uint nMemDay;
+      uint nMemOutputState;
+      uint nMemOutputNumber;
+
+
+      //3DF2
+      //Serial.printf("Full Number in dec: %d \n: Value:",FullMemValue);
+      //Serial.printf("Full Number in hex: %X \r: Value:",FullMemValue);
+      //Serial.println("-----");
+
+
+      //Serial.println("OutputNumber");
+      nMemOutputNumber=GetOutputNumber(FullMemValue);
+      //Serial.printf("Output: %d \r",nMemOutputNumber);
+      //Serial.println("-----");
+
+      //Serial.println();
+      //Serial.println("GetDayFromMemReg");
+      nMemDay=GetDayFromMemReg(FullMemValue);
+      //Serial.printf("nDay=: %d \r",nMemDay);
+      //Serial.println("-----");
+
+      //Serial.println();
+      //Serial.println("GetHourFromMemReg");
+      nMemHour=GetHourFromMemReg(FullMemValue);
+      //Serial.printf("nHour: %d \r",nMemHour);
+      //Serial.println("-----");
+
+      //Serial.println();
+      //Serial.println("GetMinFromMemReg");
+      nMemMinute=GetMinFromMemReg(FullMemValue);
+      //Serial.printf("nMinute: %d \r",nMemMinute);
+      //Serial.println("-----");
+
+      //Serial.println();
+      //Serial.println("GetOutputState");
+      nMemOutputState =GetOutputState(FullMemValue);
+      //Serial.printf("State: %d \r",nMemOutputState);
+      //Serial.println("------------------------------------------");
+
+
+
+     Serial.printf("--Memory nDay: %d, Hour  %d, Minute %d, OutputNumber %d, State %d", nMemDay,nMemHour,nMemMinute,nMemOutputNumber,nMemOutputState );       
+     Serial.println(""); 
+
+
+      //If the event is empty
+      if (FullMemValue==65535)
+      {
+        Serial.println("Event Empty"); 
+        return false;
+      }
+      
+
+      //Comparisons
+      //Day
+      if (nMemDay==0b111 || nMemDay!=nDay)
+      {
+        return false;
+      }
+
+      //Hour
+      if (nMemHour!=nHour)
+      {
+        return false;
+      }
+
+      //Minute
+      if (nMemMinute*2!=nMinute)
+      {
+        return false;
+      }
+
+      ModStateOutput(nMemOutputNumber,nMemOutputState);
+
+      //Update output
+      Serial.printf("Updated output: %d state %d\r",nMemOutputNumber,nMemOutputState);
+Serial.println("");  
 
 }
 
@@ -530,6 +575,7 @@ void loop() {
 
   WiFiClient client = server.available();   // Listen for incoming clients
 
+  //Web Server
   if (client) {                             // If a new client connects,
     currentTime = millis();
     previousTime = currentTime;
@@ -672,26 +718,19 @@ void loop() {
     Serial.println("Client disconnected.");
     Serial.println("");
   }
-  // //change(pos);
-  //  Serial.println("Hello cruel world of serial");
-  // Serial.print("IN1: "); Serial.println(digitalRead(INPUT_PIN1));
-  // Serial.print("IN2: "); Serial.println(digitalRead(INPUT_PIN2));
-  // Serial.print("IN3: "); Serial.println(digitalRead(INPUT_PIN3));
-  // Serial.print("IN4: "); Serial.println(digitalRead(INPUT_PIN4));
-  // delay(10000);
+  
+  
+
   delay(500);
 
-
-
-
-
-
+  //switch case to deal with commands
   if(Serial.available()){
     //get the serial contents
     while(Serial.available()) {
       character = Serial.read();
       content.concat(character);
     }
+    Serial.println(content);
 
 
     if (content.startsWith("Show"))
@@ -783,16 +822,19 @@ void loop() {
 
     if (content.startsWith("CheckEvent"))
     {
+   
       Serial.println("-----Start-------");
-      CheckEvent(10,10);
+     struct tm timeinfo;
+      if(!getLocalTime(&timeinfo)){
+        Serial.println("Failed to obtain time");      
+      }
+      CheckEvent(10,10,timeinfo);
       Serial.println("-----Finish-------");  
       Serial.println();
       Serial.println();
       Serial.println();
 
-    }
-
-    Serial.println(content);
+    }   
 
     if(ValidateStringEvent(content)) {
       Serial.println("OK lenght"); 
@@ -827,56 +869,52 @@ void loop() {
       ReadMemory();
 
     }  
-    content="";        
+    content="";   
+
+      // //change(pos);
+  //  Serial.println("Hello cruel world of serial");
+      Serial.print("IN1: "); Serial.println(digitalRead(INPUT_PIN1));
+      Serial.print("IN2: "); Serial.println(digitalRead(INPUT_PIN2));
+      Serial.print("IN3: "); Serial.println(digitalRead(INPUT_PIN3));
+      Serial.print("IN4: "); Serial.println(digitalRead(INPUT_PIN4));
+
+  // delay(10000);
+
+
   }    
     
-
+  //Event catching
   if(TimeToCheckEvenMinute()==true)  {
     Serial.println("Checking from main");
+
+    byte byLow;
+    byte byHigh;
+
+      struct tm timeinfo;
+      if(!getLocalTime(&timeinfo)){
+        Serial.println("Failed to obtain time");      
+      }
+
+   
+    for (int i = 0; i < 10; i++)
+    {
+      byLow=1;
+      byHigh=1;
+   
+      byHigh = EEPROM.read(i*2);
+      byLow = EEPROM.read(1+(i*2));
+
+      //Serial.printf("High %d Low %d", byHigh,byLow);
+      //Serial.println("----------");
+      if (CheckEvent(byHigh,byLow,timeinfo)==true)
+      {
+        Serial.println("Event Found");
+      }
+
+    }
   }
-  //
 
-
-//   if (pos > 3) {pos = 0;}
 
 }
 
 
-// int GetAddressPtr(String sREceived){
-
-//   int *MessageReceived;
-
-
-//Reading serial using pointers
-// void loop() {
-//   char input[3];
-//   int charsRead;
-//   int val;
-  
-//   if (Serial.available() > 0) {
-//     charsRead = Serial.readBytesUntil('\n', input, 2);  // fetch the two characters
-//     input[charsRead] = '\0';                            // Make it a string
-
-//     val = StrToHex(input);                              // Convert it
-
-//     Serial.print("Hex input was: ");                    // Show it...
-//     Serial.print(input);
-//     Serial.print("   decimal = ");
-//     Serial.println(val);
-//   }
-// }
-
-
-//inString.toInt() to convert string to int
-//data.substring(9,11)
-
-
-//Convert string to char array
-// // Define 
-// String str = "This is my string"; 
-// // Length (with one extra character for the null terminator)
-// int str_len = str.length() + 1; 
-// // Prepare the character array (the buffer) 
-// char char_array[str_len];
-// // Copy it over 
-// str.toCharArray(char_array, str_len);

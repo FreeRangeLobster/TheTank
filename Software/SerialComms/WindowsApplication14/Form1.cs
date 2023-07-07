@@ -54,7 +54,7 @@ namespace WindowsApplication14
             cbOutput.Items.AddRange(new string[] { "0", "1", "2", "3" });
             cbOutput.SelectedIndex = 1;
 
-            cbDay.Items.AddRange(new string[] { "0 Sunday", "1 Monday", "2 Tuesday", "3 Wednesday", "4 Thursday", "5 Friday", "6 Saturday"  });
+            cbDay.Items.AddRange(new string[] { "0 Sunday", "1 Monday", "2 Tuesday", "3 Wednesday", "4 Thursday", "5 Friday", "6 Saturday", "7 All" });
             cbDay.SelectedIndex =0;
 
             cbHour.Items.AddRange(new string[] { "1", "2" , "3", "4" , "5", "6" , "7", "8", "9" , "10", "11" , "12",
