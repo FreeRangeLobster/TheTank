@@ -102,21 +102,34 @@ void printLocalTime(){
   Serial.println();
 }
 
+void setTime(int yr, int month, int mday, int hr, int minute, int sec, int isDst){
+  struct tm tm;
+
+  tm.tm_year = yr - 1900;   // Set date
+  tm.tm_mon = month-1;
+  tm.tm_mday = mday;
+  tm.tm_hour = hr;      // Set time
+  tm.tm_min = minute;
+  tm.tm_sec = sec;
+  tm.tm_isdst = isDst;  // 1 or 0
+  time_t t = mktime(&tm);
+  Serial.printf("Setting time: %s", asctime(&tm));
+  struct timeval now = { .tv_sec = t };
+  settimeofday(&now, NULL);
+}
+
 uint CurrentTimeGetHour(tm timeinfo){
   // Serial.printf("Hour: %d", timeinfo.tm_hour);
-  Serial.println("---");
   return timeinfo.tm_hour;
 }
 
 uint CurrentTimeGetMinute(tm timeinfo){
   // Serial.printf("Min: %d", timeinfo.tm_min);
-  Serial.println("---");
   return timeinfo.tm_min;
 }
 
 uint CurrentTimeGetDayFromSun(tm timeinfo){
   // Serial.printf("Days from sunday: %d", timeinfo.tm_wday);
-  Serial.println("---");
   return timeinfo.tm_wday;
 }
 
@@ -159,8 +172,13 @@ void setup() {
   server.begin();
 
 
-    // Init and get the time
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  // Initialise time
+  //
+  //configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  setTime(2023,01,01,9,29,0,1);
+
+
+
   printLocalTime();
 
   EEPROM.begin(EEPROM_SIZE);
@@ -175,51 +193,6 @@ void setup() {
    //ledState = EEPROM.read(0);
    //EEPROM.write(address, value);
 
-}
-
-void ReadMemory(){
-
-  for (size_t i = 0; i < 50; i++)
-  {
-    int a=EEPROM.read(i);
-    Serial.printf("Position: %d: Value:",i);
-    Serial.println(a);
-  }  
-}
-
-void clearAllOutputs() {
-
-  digitalWrite(pins[0], LOW);
-
-  digitalWrite(pins[1], LOW);
-
-  digitalWrite(pins[2], LOW);
-
-  digitalWrite(pins[3], LOW);
-
-}
-
-void ModStateOutput(byte nOutput,byte nState) 
-{
-  if (nState==1)
-  {
-    digitalWrite(pins[nOutput], HIGH);
-  }
-  else{
-     digitalWrite(pins[nOutput],LOW);
-  }
-}
-
-/// @brief Checks if the string received is compliant with the lenght expected
-/// @param sReceived String received
-/// @return true if the string has the correct lenght
-bool ValidateStringEvent(String sReceived){
-  if(sReceived.length()>=8){
-    return true;
-  }    
-  else{
-    return false;
-  }       
 }
 
 
@@ -356,11 +329,131 @@ int GetHourFromMemReg(uint16_t MemValue){
 int GetMinFromMemReg(uint16_t MemValue){
   uint8_t a=0;
   a=GetValueFromReg(MemValue,0b0000000000111110,1);
-  return a;
+  return a*2;
+}
+
+void PrintEventDetails(uint8_t MemValueLow, uint8_t MemValueHigh){  
+  int FullMemValue = GetFullEventFromMemRegisters(MemValueLow,MemValueHigh);
+  int nDay=GetDayFromMemReg(FullMemValue);
+  int nHour=GetHourFromMemReg(FullMemValue);
+  int nMinute=GetMinFromMemReg(FullMemValue);
+  int OutputNumber=GetOutputNumber(FullMemValue);
+  int OutputState=GetOutputState(FullMemValue);
+
+  Serial.printf("Event dec: %d - High %X Low %X \t DayFromSun:%d \t Hour:%d \t Minute:%d \t Output:%d \t State: %d",FullMemValue,MemValueHigh,MemValueLow,nDay,nHour,nMinute,OutputNumber,OutputState);
+  Serial.println("");
 }
 
 
+void ReadMemory(){
+
+  for (size_t i = 0; i < 50; i++)
+  {
+    int a=EEPROM.read(i);
+    Serial.printf("Flash Raw Position: %d \t Value: %X",i,a);
+    Serial.println("");
+  }  
+
+  for (size_t i = 0; i < 50; i++)
+  {
+    int HightReg=EEPROM.read(i*2);
+    int LowReg=EEPROM.read(1+(i*2)); //low
+    Serial.printf("Mem Pos: %d \t :Value %X %X  ",i,HightReg,LowReg); 
+    PrintEventDetails(LowReg,HightReg);
+  }  
+}
+
 #pragma endregion
+
+
+
+
+
+
+
+
+void clearAllOutputs() {
+
+  digitalWrite(pins[0], LOW);
+
+  digitalWrite(pins[1], LOW);
+
+  digitalWrite(pins[2], LOW);
+
+  digitalWrite(pins[3], LOW);
+
+}
+
+void ModStateOutput(byte nOutput,byte nState) 
+{
+
+  //Update the web server
+  if (nOutput==0)
+  {
+    if (nState==0)
+    {
+      output26State = "off";
+    }
+    else{
+      output26State = "on";
+    }    
+  }
+
+  if (nOutput==1)
+  {
+    if (nState==0)
+    {
+      output27State = "off";
+    }
+    else{
+      output27State = "on";
+    }    
+  }
+
+  if (nOutput==2)
+  {
+    if (nState==0)
+    {
+      output3State = "off";
+    }
+    else{
+      output3State = "on";
+    }    
+  }
+
+  if (nOutput==3)
+  {
+    if (nState==0)
+    {
+      output4State = "off";
+    }
+    else{
+      output4State = "on";
+    }    
+  }
+  
+  //Update the pcb outputs
+  if (nState==1)
+  {
+    digitalWrite(pins[nOutput], HIGH);
+  }
+  else{
+     digitalWrite(pins[nOutput],LOW);
+  }
+}
+
+/// @brief Checks if the string received is compliant with the lenght expected
+/// @param sReceived String received
+/// @return true if the string has the correct lenght
+bool ValidateStringEvent(String sReceived){
+  if(sReceived.length()>=8){
+    return true;
+  }    
+  else{
+    return false;
+  }       
+}
+
 
 int StrToHex(char str[])
 {
@@ -446,87 +539,64 @@ bool CheckEvent( uint8_t MemValueHigh,uint8_t MemValueLow, tm timeinfo){
       nMinute =CurrentTimeGetMinute(timeinfo);
       nDay= CurrentTimeGetDayFromSun(timeinfo);
 
-
-
-
-
       int FullMemValue = GetFullEventFromMemRegisters(MemValueLow,MemValueHigh);
-      Serial.printf("--Current Hour: %d,Minute: %d,Day from Sun: %d, --HighVal %d, --LowVal %d, Mem Val 0x%X, value in dec %d ", nHour,nMinute,nDay,MemValueHigh,MemValueLow,FullMemValue, FullMemValue);         
+      //Serial.printf("--Current Hour: %d,Minute: %d,Day from Sun: %d, --HighVal %d, --LowVal %d, Mem Val 0x%X, value in dec %d ", nHour,nMinute,nDay,MemValueHigh,MemValueLow,FullMemValue, FullMemValue);         
       Serial.println("");
 
-            //Memory
+      //Memory
       uint nMemHour;
       uint nMemMinute;
       uint nMemDay;
       uint nMemOutputState;
       uint nMemOutputNumber;
 
-
-      //3DF2
-      //Serial.printf("Full Number in dec: %d \n: Value:",FullMemValue);
-      //Serial.printf("Full Number in hex: %X \r: Value:",FullMemValue);
-      //Serial.println("-----");
-
-
-      //Serial.println("OutputNumber");
-      nMemOutputNumber=GetOutputNumber(FullMemValue);
-      //Serial.printf("Output: %d \r",nMemOutputNumber);
-      //Serial.println("-----");
-
-      //Serial.println();
-      //Serial.println("GetDayFromMemReg");
-      nMemDay=GetDayFromMemReg(FullMemValue);
-      //Serial.printf("nDay=: %d \r",nMemDay);
-      //Serial.println("-----");
-
-      //Serial.println();
-      //Serial.println("GetHourFromMemReg");
-      nMemHour=GetHourFromMemReg(FullMemValue);
-      //Serial.printf("nHour: %d \r",nMemHour);
-      //Serial.println("-----");
-
-      //Serial.println();
-      //Serial.println("GetMinFromMemReg");
-      nMemMinute=GetMinFromMemReg(FullMemValue);
-      //Serial.printf("nMinute: %d \r",nMemMinute);
-      //Serial.println("-----");
-
-      //Serial.println();
-      //Serial.println("GetOutputState");
+      nMemOutputNumber=GetOutputNumber(FullMemValue);     
+      nMemDay=GetDayFromMemReg(FullMemValue);      
+      nMemHour=GetHourFromMemReg(FullMemValue);    
+      nMemMinute=GetMinFromMemReg(FullMemValue);     
       nMemOutputState =GetOutputState(FullMemValue);
-      //Serial.printf("State: %d \r",nMemOutputState);
-      //Serial.println("------------------------------------------");
 
-
-
-     Serial.printf("--Memory nDay: %d, Hour  %d, Minute %d, OutputNumber %d, State %d", nMemDay,nMemHour,nMemMinute,nMemOutputNumber,nMemOutputState );       
-     Serial.println(""); 
-
-
-      //If the event is empty
       if (FullMemValue==65535)
       {
         Serial.println("Event Empty"); 
         return false;
       }
       
+      Serial.printf("--Memory \t nDay: %d,\t Hour: %d,\t Min: %d, OutputNumber %d, State %d", nMemDay,nMemHour,nMemMinute,nMemOutputNumber,nMemOutputState );
+      Serial.println(""); 
+      Serial.printf("-Current \t nDay: %d,\t Hour: %d,\t Min: %d,\t --HighVal %d, --LowVal %d, Mem Val 0x%X, value in dec %d ", nDay,nHour,nMinute,MemValueHigh,MemValueLow,FullMemValue, FullMemValue);                        
+      Serial.println(""); 
 
-      //Comparisons
-      //Day
-      if (nMemDay==0b111 || nMemDay!=nDay)
+
+      //If the event is empty
+      if (FullMemValue==65535)
       {
+        Serial.print("Event Empty"); 
         return false;
+      }
+      
+      //Day day=111 everyday
+      if(nMemDay!=0b111){
+        if ( nMemDay!=nDay)
+            {
+              Serial.println("DayNOK "); 
+              return false;
+            }
       }
 
       //Hour
       if (nMemHour!=nHour)
       {
+        Serial.print("HourNOK "); 
         return false;
       }
 
       //Minute
-      if (nMemMinute*2!=nMinute)
+
+      if (nMemMinute !=nMinute)
       {
+        Serial.printf("CalcMem: %d ,Current: %d   ",nMemMinute,nMinute );
+        Serial.println("MinuteNOK "); 
         return false;
       }
 
@@ -534,8 +604,8 @@ bool CheckEvent( uint8_t MemValueHigh,uint8_t MemValueLow, tm timeinfo){
 
       //Update output
       Serial.printf("Updated output: %d state %d\r",nMemOutputNumber,nMemOutputState);
-Serial.println("");  
-
+      Serial.println(""); 
+      return true; 
 }
 
 bool TimeToCheckEvenMinute(){
@@ -656,9 +726,15 @@ void loop() {
              float temperature;
              temperature= ds.getTempC();
              String sTemperature= (String)temperature;
-            
             client.println("<p>Temperature[deg C] " + sTemperature + "</p>");
 
+            //display current time
+            struct tm timeinfo;
+            if(!getLocalTime(&timeinfo)){
+              Serial.println("Failed to obtain time");      
+            }                          
+            client.printf("<p>Timestamp  %d:%d:%d  </p>",timeinfo.tm_hour,timeinfo.tm_min,timeinfo.tm_sec);
+          
             
             // Display current state, and ON/OFF buttons for GPIO 26  
             client.println("<p>GPIO 26 - State " + output26State + "</p>");
@@ -723,7 +799,7 @@ void loop() {
 
   delay(500);
 
-  //switch case to deal with commands
+  //switch case to deal with serial commands
   if(Serial.available()){
     //get the serial contents
     while(Serial.available()) {
@@ -736,7 +812,7 @@ void loop() {
     if (content.startsWith("Show"))
     {
 
-      ReadMemory();
+     
       
       uint16_t FullMemValue;
       uint16_t OutputNumber;
@@ -749,6 +825,9 @@ void loop() {
       Serial.printf("Full Number in dec: %d \n: Value:",FullMemValue);
       Serial.printf("Full Number in hex: %X \r: Value:",FullMemValue);
       Serial.println("-----");
+
+
+       ReadMemory();
 
 
       Serial.println("OutputNumber");
@@ -816,6 +895,8 @@ void loop() {
       OutputState=GetOutputState(FullMemValue);
       Serial.printf("State: %d \r",OutputState);
       Serial.println("------------------------------------------");
+
+
 
     }
 
@@ -890,13 +971,13 @@ void loop() {
     byte byLow;
     byte byHigh;
 
-      struct tm timeinfo;
-      if(!getLocalTime(&timeinfo)){
-        Serial.println("Failed to obtain time");      
-      }
+    struct tm timeinfo;
+    if(!getLocalTime(&timeinfo)){
+      Serial.println("Failed to obtain time");      
+    }
 
    
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 50; i++)
     {
       byLow=1;
       byHigh=1;
@@ -904,14 +985,20 @@ void loop() {
       byHigh = EEPROM.read(i*2);
       byLow = EEPROM.read(1+(i*2));
 
-      //Serial.printf("High %d Low %d", byHigh,byLow);
-      //Serial.println("----------");
+
       if (CheckEvent(byHigh,byLow,timeinfo)==true)
       {
-        Serial.println("Event Found");
+        Serial.println("***************Event Found******************");
       }
 
     }
+    Serial.print("Out0: "); Serial.println(digitalRead(pins[0]));
+    Serial.print("Out1: "); Serial.println(digitalRead(pins[1]));
+    Serial.print("Out2: "); Serial.println(digitalRead(pins[2]));
+    Serial.print("Out3: "); Serial.println(digitalRead(pins[3]));
+
+
+
   }
 
 

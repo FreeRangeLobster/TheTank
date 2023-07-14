@@ -92,9 +92,13 @@ Minute=30  01111
 status = 1
 
 Summary: 11 110 00110 01111 1
-binary: 0011 1101 1111 0010
-hex 
-Dec 
+binary: 1111 0001 1001 1111
+hex: 0xF19F
+Dec:61855 
+Top side: F1 = 241d
+Low side: 9F = 159d
+
+
 
 | Send  | REceive| 
 |-------|---------|

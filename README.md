@@ -110,3 +110,13 @@ Low side: 9F = 159d
 E:004DFC
 E:01888A
 E:023DF2
+
+Sample
+E:003A5F	00 	00 111 01001 01111 1		output 0, AllDays, 9:30 ,  State On : 
+E:017A61	01 	01 111 01001 10000 1		output 1, AllDays, 9:32 ,  State On : 
+E:02BA63	02	10 111 01001 10001 1		output 2, AllDays, 9:34 ,  State On : 
+E:03FA65	03	11 111 01001 10010 1		output 3, AllDays, 9:36 ,  State On : 
+E:043A66	04	00 111 01001 10011 0		output 0, AllDays, 9:38 ,  State OFF : 
+E:057A68	05	01 111 01001 10100 0		output 1, AllDays, 9:40 ,  State OFF : 
+E:06BA6A	06	10 111 01001 10101 0		output 2, AllDays, 9:42 ,  State OFF : 
+E:07FA6C	07	11 111 01001 10110 0		output 3, AllDays, 9:44 ,  State OFF : 
