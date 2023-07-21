@@ -118,17 +118,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="label12.Text" xml:space="preserve">
-    <value>//|  2bit        | 3 bit     | 5  bit    |   5  bit     |   1 bit   |
-//|--------------|-----------|-----------|--------------|-----------|
-//| Output(0-3)  |  Day(0-7) | Hour(0-24)|  Min*2(0-60) | State(0-1)|
-
-
-Output(0-3)
-Day(0-7)
-Hour(0-24)
-Min*2(0-60)
-State(0-1)|
-
-</value>
+    <value>| 2bit      |   3 bit   | 5  bit    |   5  bit     |   1 bit   |
+|Output(0-3)|  Day(0-7) | Hour(0-24)|  Min*2(0-60) | State(0-1)|
+Where
+  Output(0-3)
+  Day(0-7)
+  Hour(0-24)
+  Min*2(0-60)
+  State(0-1)|</value>
   </data>
 </root>

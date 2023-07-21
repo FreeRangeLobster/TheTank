@@ -5,7 +5,7 @@
   <ProductVersion>2.4.1</ProductVersion>
   <Warning>Modifying structure and/or content may cause undefined behavior!</Warning>
   <Mark>
-    <TimeStamp>2023-05-03T07:51:44.8737084+02:00</TimeStamp>
+    <TimeStamp>2023-07-21T15:46:00.146673+02:00</TimeStamp>
     <UserName>Utente</UserName>
   </Mark>
   <Page>
@@ -39,6 +39,38 @@
       <Description />
       <DefaultRadix>String</DefaultRadix>
       <CommandLines>Show</CommandLines>
+      <IsFilePath>false</IsFilePath>
+      <FilePath />
+    </Commands>
+    <Commands>
+      <IsDefined>true</IsDefined>
+      <Description />
+      <DefaultRadix>String</DefaultRadix>
+      <CommandLines>CheckEvent</CommandLines>
+      <IsFilePath>false</IsFilePath>
+      <FilePath />
+    </Commands>
+    <Commands>
+      <IsDefined>true</IsDefined>
+      <Description />
+      <DefaultRadix>String</DefaultRadix>
+      <CommandLines>ShowFullMemory</CommandLines>
+      <IsFilePath>false</IsFilePath>
+      <FilePath />
+    </Commands>
+    <Commands>
+      <IsDefined>true</IsDefined>
+      <Description />
+      <DefaultRadix>String</DefaultRadix>
+      <CommandLines>ShowAllEvents</CommandLines>
+      <IsFilePath>false</IsFilePath>
+      <FilePath />
+    </Commands>
+    <Commands>
+      <IsDefined>true</IsDefined>
+      <Description />
+      <DefaultRadix>String</DefaultRadix>
+      <CommandLines>ShowCurrentState</CommandLines>
       <IsFilePath>false</IsFilePath>
       <FilePath />
     </Commands>

@@ -174,8 +174,8 @@ void setup() {
 
   // Initialise time
   //
-  //configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  setTime(2023,01,01,9,29,0,1);
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  //setTime(2023,01,01,9,29,0,1);
 
 
 
@@ -347,14 +347,7 @@ void PrintEventDetails(uint8_t MemValueLow, uint8_t MemValueHigh){
 
 void ReadMemory(){
 
-  for (size_t i = 0; i < 50; i++)
-  {
-    int a=EEPROM.read(i);
-    Serial.printf("Flash Raw Position: %d \t Value: %X",i,a);
-    Serial.println("");
-  }  
-
-  for (size_t i = 0; i < 50; i++)
+  for (size_t i = 0; i < 255/2; i++)
   {
     int HightReg=EEPROM.read(i*2);
     int LowReg=EEPROM.read(1+(i*2)); //low
@@ -363,6 +356,35 @@ void ReadMemory(){
   }  
 }
 
+void ReadMemoryEvent(){
+
+  // for (size_t i = 0; i < 50; i++)
+  // {
+  //   int a=EEPROM.read(i);
+  //   Serial.printf("Flash Raw Position: %d \t Value: %X",i,a);
+  //   Serial.println("");
+  // }  
+
+  for (size_t i = 0; i < 255/2; i++)
+  {
+    int HightReg=EEPROM.read(i*2);
+    int LowReg=EEPROM.read(1+(i*2)); //low
+    Serial.printf("Mem Pos: %d \t :Value %X %X  ",i,HightReg,LowReg); 
+    PrintEventDetails(LowReg,HightReg);
+  }  
+}
+
+void PrintMemoryRAW(){
+  for (size_t i = 0; i < 256; i++)
+  {
+    int a=EEPROM.read(i);
+    Serial.printf("Flash Raw Position: %d \t Value: %X",i,a);
+    Serial.println("");
+  }  
+}
+
+
+
 #pragma endregion
 
 
@@ -370,18 +392,11 @@ void ReadMemory(){
 
 
 
-
-
 void clearAllOutputs() {
-
   digitalWrite(pins[0], LOW);
-
   digitalWrite(pins[1], LOW);
-
   digitalWrite(pins[2], LOW);
-
   digitalWrite(pins[3], LOW);
-
 }
 
 void ModStateOutput(byte nOutput,byte nState) 
@@ -703,10 +718,6 @@ void loop() {
               digitalWrite(pins[3], LOW);
             }
             
-
-
-
-
             // Display the HTML web page
             client.println("<!DOCTYPE html><html>");
             client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
@@ -720,7 +731,6 @@ void loop() {
             
             // Web Page Heading
             client.println("<body><h1>Llama Tank Web Server</h1>");
-
 
             // Display current Temperature  
              float temperature;
@@ -794,9 +804,7 @@ void loop() {
     Serial.println("Client disconnected.");
     Serial.println("");
   }
-  
-  
-
+    
   delay(500);
 
   //switch case to deal with serial commands
@@ -809,97 +817,32 @@ void loop() {
     Serial.println(content);
 
 
-    if (content.startsWith("Show"))
-    {
-
-     
-      
-      uint16_t FullMemValue;
-      uint16_t OutputNumber;
-      uint16_t OutputState;
-      uint16_t nDay;
-      uint16_t nHour;
-      uint16_t nMinute;
-   
-      FullMemValue = GetFullEventFromMemRegisters(252,77);
-      Serial.printf("Full Number in dec: %d \n: Value:",FullMemValue);
-      Serial.printf("Full Number in hex: %X \r: Value:",FullMemValue);
-      Serial.println("-----");
 
 
-       ReadMemory();
-
-
-      Serial.println("OutputNumber");
-      OutputNumber=GetOutputNumber(FullMemValue);
-      Serial.printf("Output: %d \r",OutputNumber);
-      Serial.println("-----");
-
-      Serial.println();
-      Serial.println("GetDayFromMemReg");
-      nDay=GetDayFromMemReg(FullMemValue);
-      Serial.printf("nDay=: %d \r",nDay);
-      Serial.println("-----");
-
-      Serial.println();
-      Serial.println("GetHourFromMemReg");
-      nHour=GetHourFromMemReg(FullMemValue);
-      Serial.printf("nHour: %d \r",nHour);
-      Serial.println("-----");
-
-      Serial.println();
-      Serial.println("GetMinFromMemReg");
-      nMinute=GetMinFromMemReg(FullMemValue);
-      Serial.printf("nMinute: %d \r",nMinute);
-      Serial.println("-----");
-
-
-      Serial.println();
-      Serial.println("GetOutputState");
-      OutputState=GetOutputState(FullMemValue);
-      Serial.printf("State: %d \r",OutputState);
-      Serial.println("------------------------------------------");
-
-      //3DF2
-      FullMemValue = GetFullEventFromMemRegisters(242,61);
-      Serial.printf("Full Number in dec: %d \n: Value:",FullMemValue);
-      Serial.printf("Full Number in hex: %X \r: Value:",FullMemValue);
-      Serial.println("-----");
-
-
-      Serial.println("OutputNumber");
-      OutputNumber=GetOutputNumber(FullMemValue);
-      Serial.printf("Output: %d \r",OutputNumber);
-      Serial.println("-----");
-
-      Serial.println();
-      Serial.println("GetDayFromMemReg");
-      nDay=GetDayFromMemReg(FullMemValue);
-      Serial.printf("nDay=: %d \r",nDay);
-      Serial.println("-----");
-
-      Serial.println();
-      Serial.println("GetHourFromMemReg");
-      nHour=GetHourFromMemReg(FullMemValue);
-      Serial.printf("nHour: %d \r",nHour);
-      Serial.println("-----");
-
-      Serial.println();
-      Serial.println("GetMinFromMemReg");
-      nMinute=GetMinFromMemReg(FullMemValue);
-      Serial.printf("nMinute: %d \r",nMinute);
-      Serial.println("-----");
-
-      Serial.println();
-      Serial.println("GetOutputState");
-      OutputState=GetOutputState(FullMemValue);
-      Serial.printf("State: %d \r",OutputState);
-      Serial.println("------------------------------------------");
-
-
-
+    if(content.startsWith("ShowFullMemory")){
+      PrintMemoryRAW();
     }
 
+    if(content.startsWith("ShowCurrentState")){
+      struct tm timeinfo;
+      if(!getLocalTime(&timeinfo)){
+      Serial.println("Failed to obtain time");      
+      }                          
+      Serial.printf("Timestamp  %d:%d:%d  DaysFrom Sun %d",timeinfo.tm_hour,timeinfo.tm_min,timeinfo.tm_sec,timeinfo.tm_wday);
+      Serial.println("");
+
+      Serial.print("Wifi network");
+      Serial.println(ssid);
+        Serial.print("IP address: ");
+        Serial.println(WiFi.localIP());
+       
+
+
+
+
+
+      Serial.println("");
+    }
 
     if (content.startsWith("CheckEvent"))
     {
@@ -917,57 +860,61 @@ void loop() {
 
     }   
 
-    if(ValidateStringEvent(content)) {
-      Serial.println("OK lenght"); 
-      GetAddress(content); 
-      TopSide(content); 
-      //BottomSide(content); 
+    if (content.startsWith("ShowAllEvents"))
+    {
+       ReadMemory();
+    }
 
-      byte val;
-      byte Address;
-      byte HighSide;
-      byte LowSide;
-      Address = SplitAndConvertByte(content,2,4);
-      HighSide = SplitAndConvertByte(content,4,6);    
-      LowSide = SplitAndConvertByte(content,6,8); 
+    if(content.startsWith("E:"))
+    {
+        if(ValidateStringEvent(content)) {
+          Serial.println("OK lenght"); 
+          GetAddress(content); 
+          TopSide(content); 
+          //BottomSide(content); 
 
-      EEPROM.write((Address*2), HighSide); 
-      EEPROM.write((Address*2)+1, LowSide);
-      EEPROM.commit(); 
+          byte val;
+          byte Address;
+          byte HighSide;
+          byte LowSide;
+          Address = SplitAndConvertByte(content,2,4);
+          HighSide = SplitAndConvertByte(content,4,6);    
+          LowSide = SplitAndConvertByte(content,6,8); 
 
-      Serial.printf("Address: %d HighByte: %d LowByte: %d \n", Address,HighSide,LowSide );
-       
+          EEPROM.write((Address*2), HighSide); 
+          EEPROM.write((Address*2)+1, LowSide);
+          EEPROM.commit(); 
 
-      int nhighSide=0;
-      int nlowSide=0;
-      nhighSide=EEPROM.read(Address*2);
-      nlowSide=EEPROM.read((Address*2)+1); 
+          Serial.printf("Address: %d HighByte: %d LowByte: %d \n", Address,HighSide,LowSide );
+          
 
-      Serial.printf("In Memory Address: %d HighByte: In Memory Address: %d \n", Address*2,nhighSide);
-      Serial.printf("In Memory Address: %d LowByte: In Memory Address: %d  \n",(Address*2)+1,nlowSide);
-      Serial.println("----");
+          int nhighSide=0;
+          int nlowSide=0;
+          nhighSide=EEPROM.read(Address*2);
+          nlowSide=EEPROM.read((Address*2)+1); 
 
-      ReadMemory();
+          Serial.printf("In Memory Address: %d HighByte: In Memory Address: %d \n", Address*2,nhighSide);
+          Serial.printf("In Memory Address: %d LowByte: In Memory Address: %d  \n",(Address*2)+1,nlowSide);
+          Serial.println("----");
 
-    }  
+          ReadMemory();
+        }
+    }
+
+    
     content="";   
 
-      // //change(pos);
-  //  Serial.println("Hello cruel world of serial");
-      Serial.print("IN1: "); Serial.println(digitalRead(INPUT_PIN1));
-      Serial.print("IN2: "); Serial.println(digitalRead(INPUT_PIN2));
-      Serial.print("IN3: "); Serial.println(digitalRead(INPUT_PIN3));
-      Serial.print("IN4: "); Serial.println(digitalRead(INPUT_PIN4));
-
-  // delay(10000);
-
+    //change(pos);
+    Serial.print("IN1: "); Serial.println(digitalRead(INPUT_PIN1));
+    Serial.print("IN2: "); Serial.println(digitalRead(INPUT_PIN2));
+    Serial.print("IN3: "); Serial.println(digitalRead(INPUT_PIN3));
+    Serial.print("IN4: "); Serial.println(digitalRead(INPUT_PIN4));
 
   }    
     
   //Event catching
   if(TimeToCheckEvenMinute()==true)  {
-    Serial.println("Checking from main");
-
+   // Serial.println("Checking from main");
     byte byLow;
     byte byHigh;
 
@@ -986,10 +933,10 @@ void loop() {
       byLow = EEPROM.read(1+(i*2));
 
 
-      if (CheckEvent(byHigh,byLow,timeinfo)==true)
-      {
-        Serial.println("***************Event Found******************");
-      }
+      //if (CheckEvent(byHigh,byLow,timeinfo)==true)
+      //{
+      //  Serial.println("***************Event Found******************");
+      //}
 
     }
     Serial.print("Out0: "); Serial.println(digitalRead(pins[0]));
